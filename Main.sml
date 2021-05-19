@@ -11,23 +11,41 @@ struct
       NONE => NONE
     | SOME s => stringToPos s
 
-  fun colorToString Reversi.BLACK = "●"
-    | colorToString Reversi.WHITE = "◯"
+  fun colorToString Reversi.BLACK = "*"
+    | colorToString Reversi.WHITE = "o"
 
   fun rowToString board y =
+    Int.toString y ^
     String.concat
       (List.tabulate
         (Reversi.boardSize,
           fn x => case Reversi.get board (x, y) of
                     SOME c => colorToString c
-                  | NONE => "＿"))
+                  | NONE => "_"))
     ^ "\n"
 
   fun boardToString board =
     String.concat
-      (List.tabulate (Reversi.boardSize, rowToString board))
+      ( [" "] @
+       (List.tabulate (Reversi.boardSize, fn x => Int.toString x)) @
+        ["\n"] @
+       (List.tabulate (Reversi.boardSize, rowToString board))
+      )
 
-  fun gameToString {board, next = SOME c} = boardToString board ^ colorToString c ^ "の手番です\n"
+  (* val printPosition = fn : int * int -> string *)
+  fun printPosition (x, y) = "[" ^ (Int.toString x) ^  " " ^ (Int.toString y) ^ "]"
+
+  (* val printPossiblies = fn : (int * int) list -> string *)
+  fun printPossiblies positions =
+    foldl (fn (x, y) => (printPosition x) ^ y) "" positions
+
+  fun gameToString {board, next = SOME c} =
+        boardToString board ^
+        colorToString c ^
+        "の手番です\n" ^
+        "着手可能：" ^
+        printPossiblies (Reversi.possible board c) ^
+        "\n"
     | gameToString {board, next = NONE} = boardToString board ^ "終局\n"
 
   fun mainLoop game =
