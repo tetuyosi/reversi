@@ -49,13 +49,26 @@ struct
     | gameToString {board, next = NONE} = boardToString board ^ "終局\n"
 
   fun mainLoop game =
-    (print (gameToString game);
+    (
+      print (gameToString game);
       case readPos () of
         NONE => ()
       | SOME pos =>
-        case Reversi.step game pos of
-          NONE => ()
-        | SOME game => mainLoop game)
+        let
+          val b = #board game
+          val c = #next game
+        in
+          case c of
+            NONE => ()
+          | SOME color =>
+            case List.exists (fn x => pos = x) (Reversi.possible b color) of
+              false => mainLoop game
+            | true =>
+              case Reversi.step game pos of
+                NONE => ()
+              | SOME game => mainLoop game
+        end
+    )
 end
 
 val _ = Main.mainLoop Reversi.init
